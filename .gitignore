@@ -1,0 +1,23 @@
+# Secrets — JAMAIS sur Git
+.env
+*.env
+
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Données (trop volumineuses pour Git)
+data/raw/
+data/processed/
+
+# Logs
+logs/
+*.log
+
+# Mac
+.DS_Store

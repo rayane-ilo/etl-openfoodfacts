@@ -10,19 +10,17 @@ from sqlalchemy import create_engine, text
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-
 def get_engine():
-    """Crée la connexion PostgreSQL depuis les variables d'environnement."""
+    # Crée la connexion PostgreSQL depuis les variables d'environnement
     url = (
         f"postgresql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}"
         f"@{os.environ['DB_HOST']}:{os.environ['DB_PORT']}/{os.environ['DB_NAME']}"
     )
     return create_engine(url, pool_pre_ping=True)
 
-
 @contextmanager
 def get_conn(engine):
-    """Gère les transactions : commit si OK, rollback si erreur."""
+    # Gère les transactions : commit si OK, rollback si erreur
     conn = engine.connect()
     try:
         yield conn
@@ -34,9 +32,8 @@ def get_conn(engine):
     finally:
         conn.close()
 
-
 def initialiser_schema(engine):
-    """Crée les tables si elles n'existent pas."""
+    # Crée les tables si elles n'existent pas
     with get_conn(engine) as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS dim_produit (
@@ -56,8 +53,8 @@ def initialiser_schema(engine):
                 graisses_g          NUMERIC(6,2),
                 sel_g               NUMERIC(6,2),
                 fibres_g            NUMERIC(6,2),
-                created_at          TIMESTAMP DEFAULT NOW(),
-                updated_at          TIMESTAMP DEFAULT NOW()
+                created_at          CURRENT_TIMESTAMP,
+                updated_at          CURRENT_TIMESTAMP
             )
         """))
         conn.execute(text("""
@@ -70,14 +67,13 @@ def initialiser_schema(engine):
                 nb_mis_a_jour   INTEGER,
                 duree_sec       NUMERIC(8,3),
                 statut          TEXT,
-                created_at      TIMESTAMP DEFAULT NOW()
+                created_at      CURRENT_TIMESTAMP
             )
         """))
     logger.info("Schéma vérifié : dim_produit + pipeline_runs")
 
-
 def upsert_produits(df: pd.DataFrame, engine) -> dict:
-    """Insert si nouveau produit, Update si existant (basé sur code_barres)."""
+    # Insert si nouveau produit, Update si existant (basé sur code_barres)
     if df.empty:
         logger.info("DataFrame vide — rien à charger")
         return {"inseres": 0, "mis_a_jour": 0}
@@ -102,7 +98,7 @@ def upsert_produits(df: pd.DataFrame, engine) -> dict:
                         energie_kcal=:energie_kcal, proteines_g=:proteines_g,
                         glucides_g=:glucides_g, sucres_g=:sucres_g,
                         graisses_g=:graisses_g, sel_g=:sel_g,
-                        fibres_g=:fibres_g, updated_at=NOW()
+                        fibres_g=:fibres_g, updated_at=CURRENT_TIMESTAMP
                     WHERE code_barres=:code_barres
                 """), data)
                 mis_a_jour += 1
@@ -125,9 +121,8 @@ def upsert_produits(df: pd.DataFrame, engine) -> dict:
     logger.info(f"Upsert : {inseres} insérés, {mis_a_jour} mis à jour")
     return {"inseres": inseres, "mis_a_jour": mis_a_jour}
 
-
 def logger_run(engine, info: dict):
-    """Enregistre les métriques du run dans pipeline_runs."""
+    # Enregistre les métriques du run dans pipeline_runs
     with get_conn(engine) as conn:
         conn.execute(text("""
             INSERT INTO pipeline_runs

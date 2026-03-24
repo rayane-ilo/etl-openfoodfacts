@@ -3,7 +3,6 @@ import logging
 import time
 from datetime import date
 from dotenv import load_dotenv
-
 from src.extract import fetch_products
 from src.transform import normaliser_produits, calculer_stats_par_nutriscore
 from src.load import get_engine, initialiser_schema, upsert_produits, logger_run
@@ -22,23 +21,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pipeline")
 
-
 def run_pipeline(
     categorie: str = "beverages",
     page_size: int = 100,
     max_pages: int = 3,
 ) -> dict:
-    """
-    Orchestre le pipeline ETL complet.
+    # Orchestre le pipeline ETL complet.
+    # Args:
+    #     categorie  : catégorie Open Food Facts à extraire
+    #     page_size  : produits par page API
+    #     max_pages  : nombre de pages à récupérer
+    # Returns:
+    #     dict avec les métriques du run
 
-    Args:
-        categorie  : catégorie Open Food Facts à extraire
-        page_size  : produits par page API
-        max_pages  : nombre de pages à récupérer
-
-    Returns:
-        dict avec les métriques du run
-    """
     logger.info(f"=== PIPELINE DÉMARRÉ — catégorie={categorie} ===")
     debut = time.perf_counter()
 
@@ -105,7 +100,6 @@ def run_pipeline(
         )
 
     return metriques
-
 
 # ── Point d'entrée ────────────────────────────────────────────────────────────
 # Ce bloc ne s'exécute QUE si vous lancez directement :

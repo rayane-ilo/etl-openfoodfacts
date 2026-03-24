@@ -5,16 +5,13 @@ from src.extract import extraire_nutriment
 
 logger = logging.getLogger(__name__)
 
-
 def normaliser_produits(produits_raw: list[dict]) -> pd.DataFrame:
-    """
-    Transforme la liste brute de l'API en DataFrame structuré et propre.
+    # Transforme la liste brute de l'API en DataFrame structuré et propre.
+    # Le processus en 3 temps :
+    # 1. Aplatir  : passer de dicts imbriqués à un DataFrame colonnaire
+    # 2. Nettoyer : supprimer les invalides, dédupliquer
+    # 3. Valider  : vérifier que les valeurs sont cohérentes
 
-    Le processus en 3 temps :
-    1. Aplatir  : passer de dicts imbriqués à un DataFrame colonnaire
-    2. Nettoyer : supprimer les invalides, dédupliquer
-    3. Valider  : vérifier que les valeurs sont cohérentes
-    """
     if not produits_raw:
         logger.warning("Liste vide — retourne DataFrame vide")
         return pd.DataFrame()
@@ -48,7 +45,6 @@ def normaliser_produits(produits_raw: list[dict]) -> pd.DataFrame:
     logger.info(f"Aplatissage terminé : {n_initial} lignes")
 
     # ── 2. NETTOYER ───────────────────────────────────────────────────────
-
     # Supprimer les produits sans code-barres (inutilisables en BDD)
     df = df[df["code_barres"].str.len() > 0]
 
@@ -60,7 +56,6 @@ def normaliser_produits(produits_raw: list[dict]) -> pd.DataFrame:
     df = df.drop_duplicates(subset=["code_barres"], keep="first")
 
     # ── 3. VALIDER ────────────────────────────────────────────────────────
-
     # Nutriments : remplacer les valeurs impossibles par None
     # (calories > 900 kcal/100g c'est physiquement impossible)
     bornes = {
@@ -92,12 +87,10 @@ def normaliser_produits(produits_raw: list[dict]) -> pd.DataFrame:
     )
     return df.reset_index(drop=True)
 
-
 def calculer_stats_par_nutriscore(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calcule des statistiques par nutriscore.
-    Utile pour vérifier la qualité des données et créer un rapport.
-    """
+    # Calcule des statistiques par nutriscore.
+    # Utile pour vérifier la qualité des données et créer un rapport.
+    
     if df.empty:
         return pd.DataFrame()
 
@@ -113,14 +106,11 @@ def calculer_stats_par_nutriscore(df: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
     )
 
-
 def _premier_tag(tags: list) -> str:
-    """
-    Fonction utilitaire privée (préfixe _).
-    Extrait le premier tag d'une liste et supprime le préfixe de langue.
+    # Fonction utilitaire privée (préfixe _).
+    # Extrait le premier tag d'une liste et supprime le préfixe de langue.
+    # Exemple : ['en:france', 'en:germany'] → 'france'
 
-    Exemple : ['en:france', 'en:germany'] → 'france'
-    """
     if not tags or not isinstance(tags, list):
         return ""
     return tags[0].split(":")[-1].replace("-", " ").strip()

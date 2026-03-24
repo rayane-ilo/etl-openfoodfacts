@@ -15,19 +15,16 @@ def fetch_products(
     page_size: int = 100,
     max_pages: int = 3,
 ) -> list[dict]:
-    """
-    Extrait des produits depuis l'API Open Food Facts.
-    L'API ne renvoie pas tout d'un coup, elle pagine par blocs.
-    page_size=100, max_pages=3 → 300 produits maximum.
+    # Extrait des produits depuis l'API Open Food Facts.
+    # L'API ne renvoie pas tout d'un coup, elle pagine par blocs.
+    # page_size=100, max_pages=3 → 300 produits maximum.
+    # Args:
+    #     categorie : catégorie de produits ('beverages', 'dairy', 'snacks'...)
+    #     page_size : produits par page (max 200 selon l'API)
+    #     max_pages : nombre de pages à récupérer
+    # Returns:
+    #     Liste de dicts — chaque dict = un produit brut de l'API
 
-    Args:
-        categorie : catégorie de produits ('beverages', 'dairy', 'snacks'...)
-        page_size : produits par page (max 200 selon l'API)
-        max_pages : nombre de pages à récupérer
-
-    Returns:
-        Liste de dicts — chaque dict = un produit brut de l'API
-    """
     tous_les_produits = []
 
     for page in range(1, max_pages + 1):
@@ -77,27 +74,21 @@ def fetch_products(
         tous_les_produits.extend(produits)
         logger.info(f"Page {page} : {len(produits)} produits récupérés")
 
-        # Politesse envers l'API : pause de 0.5 seconde entre les pages
-        # Sans ça, l'API peut bloquer votre IP (rate limiting)
+        # Pause de 0.5 seconde entre les pages
         time.sleep(0.5)
 
     logger.info(f"Extraction terminée : {len(tous_les_produits)} produits")
     return tous_les_produits
 
-
 def extraire_nutriment(nutriments: dict, cle: str) -> Optional[float]:
-    """
-    Extrait la valeur d'un nutriment depuis le dict de l'API.
+    # Extrait la valeur d'un nutriment depuis le dict de l'API.
+    # Pourquoi cette fonction ?
+    # L'API renvoie les nutriments avec le suffixe '_100g' :
+    #    nutriments['energy-kcal_100g'] = 539
+    # Mais parfois le suffixe est absent. Cette fonction essaie les deux.
+    # Returns:
+    #   float si trouvé et valide, None sinon
 
-    Pourquoi cette fonction ?
-    L'API renvoie les nutriments avec le suffixe '_100g' :
-      nutriments['energy-kcal_100g'] = 539
-
-    Mais parfois le suffixe est absent. Cette fonction essaie les deux.
-
-    Returns:
-        float si trouvé et valide, None sinon
-    """
     for suffixe in ["_100g", ""]:
         valeur = nutriments.get(f"{cle}{suffixe}")
         if valeur is not None:

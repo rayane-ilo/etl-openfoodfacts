@@ -2,8 +2,6 @@
 Pipeline ETL complet qui extrait des données produits depuis l'API Open Food Facts,
 les nettoie et les charge dans PostgreSQL.
 
-Projet réalisé dans le cadre d'une formation Data Engineer — Phase 1 Fondations.
-
 ---
 
 ## Stack technique
